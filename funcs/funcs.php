@@ -36,7 +36,7 @@
 	{
 		global $mysqli;
 		
-		$stmt = $mysqli->prepare("SELECT id_frid FROM frid WHERE frid = ? LIMIT 1");
+		$stmt = $mysqli->prepare("SELECT id_tarjeta FROM tarjeta WHERE numero_tarjeta = ? LIMIT 1");
 		$stmt->bind_param("s", $var1);
 		$stmt->execute();
 		$stmt->store_result();
@@ -107,7 +107,7 @@
 	{
 		global $mysqli;
 		
-		$stmt = $mysqli->prepare("SELECT id_frid FROM frid WHERE frid = ? LIMIT 1");
+		$stmt = $mysqli->prepare("SELECT id_tarjeta FROM tarjeta WHERE numero_tarjeta = ? LIMIT 1");
 		$stmt->bind_param("s", $nfc);
 		$stmt->execute();
 		$stmt->store_result();
@@ -157,6 +157,35 @@
 		
 		$stmt = $mysqli->prepare("INSERT INTO usuarios (usuario, password, nombre, correo, activacion, token, id_tipo) VALUES(?,?,?,?,?,?,?)");
 		$stmt->bind_param('ssssisi', $usuario, $pass_hash, $nombre, $email, $activo, $token, $tipo_usuario);
+		
+		if ($stmt->execute()){
+			return $mysqli->insert_id;
+			} else {
+			return 0;	
+		}		
+	}
+        
+        
+        function registraControl($idtarjeta){
+		
+		global $mysqli;
+                $fecha=CURDATE();
+                $hora=TIME(NOW());
+		
+		$stmt = $mysqli->prepare("INSERT INTO control (control, fecha, hora_ingreso, id_tarjeta) VALUES(?,?,?,?)");
+		$stmt->bind_param('ssssisi', 0,$fecha ,$hora , $idtarjeta);
+		
+		$stmt->execute()	;
+				
+	}
+        
+        
+        function registraNfc($numero, $estado){
+		
+		global $mysqli;
+		
+		$stmt = $mysqli->prepare("INSERT INTO tarjeta (numero_tarjeta, estado) VALUES(?,?)");
+		$stmt->bind_param('si', $numero, $estado);
 		
 		if ($stmt->execute()){
 			return $mysqli->insert_id;

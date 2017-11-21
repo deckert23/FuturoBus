@@ -3,29 +3,61 @@ session_start();
 require 'funcs/conexion.php';
 require 'funcs/funcs.php';
 $errors = array();
-if (!isset($_SESSION["id_usuario"])    || $_SESSION['tipo_usuario'] != 1) {
+if (!isset($_SESSION["id_usuario"]) || $_SESSION['tipo_usuario'] != 1) {
     header("Location: index.php");
 }
 
 
 
-    $prueba = fopen("archivo.txt", "r") or die("Error al leer");
+$prueba = fopen("archivo.txt", "r") or die("Error al leer");
 
-    while (!feof($prueba)) {
-        $nombre = fgets($prueba);
-  
-}
+
+$nombre = fgets($prueba);
+
 if ($nombre == "") {
 
     $errors[] = "Error al leer Numero Tarjeta / Acercar tarjeta al Lector";
     $errors[] = '<a href="registronfc.php" title="Continuar"><button class="btn btn-warning">Obtener Numero</button></a>';
 }
+
+if (nfcExiste($nombre)) {
+
+    $errors[] = "tarjeta registrada / Intente con otra";
+    
+    $errors[] = '<a href="registronfc.php" title="Continuar"><button class="btn btn-warning">Obtener Numero</button></a>';
+    
+   
+}
+
+if (!empty($_POST) && $nombre != "" && nfcExiste($nombre)!= TRUE) {
+
+    $numero_tarjeta = $mysqli->real_escape_string($nombre);
+    $estado_nfc = 0;
+
+
+    $registro = registraNfc($numero_tarjeta, $estado_nfc);
+
+    if ($registro == 0) {
+
+        $errors[] = "error al registrar Tarjeta";
+    } else {
+        ?>
+        <script>
+            alert('Tarjeta registrada');
+            window.location.href = 'welcome.php';
+        </script>
+        <?php
+    }
+}
+
+
+
+
 ?>
 
 
 
-<html>
-    <head>
+
         <title>Furturo Bus</title>
         <meta charset="utf-8">
         <link rel="stylesheet" href="css/bootstrap.min.css" >
@@ -63,17 +95,15 @@ if ($nombre == "") {
 
                             <div style="margin-bottom: 20px" class="input-group">
                                 <span class="input-group-addon"><i class="glyphicon glyphicon-credit-card"></i></span>
-                                <input disabled id="numeronfc" type="text" class="form-control" name="usuario" value="<?php echo $nombre; ?>" required>                                        
+                                <input disabled type="text" class="form-control" name="numeronfc" value="<?php echo "$nombre"; ?>" required>                                        
+                                <input  type="hidden" class="form-control" name="ver" value="1" > 
                             </div>
 
-                            <div style="margin-bottom: 20px" class="input-group">
-                                <span class="input-group-addon"><i class="glyphicon glyphicon-lock"></i></span>
-                                <input id="password" type="text" class="form-control" name="password" placeholder="password" required>
-                            </div>
+
 
                             <div style="margin-top:10px" class="form-group">
                                 <div class="col-sm-12 controls">
-                                    <button style="margin-top: 20px" id="btn-login" type="submit" class="btn btn-primary">Iniciar Sesi&oacute;n</button>
+                                    <button id="btn-signup" style="margin-top: 20px"  type="submit" class="btn btn-primary">Registrar</button>
 
                                 </div>
                             </div>
@@ -86,16 +116,17 @@ if ($nombre == "") {
                                 </div>
                             </div>    
                         </form>
-<?php
-$archivo = fopen("archivo.txt", "w");
-fclose($archivo);
-echo resultBlock($errors);
-?>
-                        
+                        <?php
+                        echo resultBlock($errors);
+                        ?>
+
                     </div>                     
                 </div>  
 
             </div>
+            
+            
+            
 
         </div>
     </body>
