@@ -13,11 +13,6 @@ if (!empty($_GET)) {
 
         fwrite($fi, $_GET['nfc_id']);
         fclose($fi);
-       
-        
-        
-        
-        
     } else {
         echo "valor=" . "0" . ";";
 
@@ -32,30 +27,64 @@ if (!empty($_GET)) {
 }
 
 
-
+$nfc2 = $_GET["nfc_id"];
 ///INSERTA CONTROL DE ENTRADA Y SALIDA
 
 global $mysqli;
 
-$sql = "SELECT control  FROM usuarios,id_tarjeta WHERE id_tarjeta = '$nfc'";
-$result = $mysqli->query($sql);
-$row = $result->fetch_assoc();
+$stmt = $mysqli->prepare("SELECT id_tarjeta FROM tarjeta WHERE numero_tarjeta = ? LIMIT 1");
+$stmt->bind_param('s', $nfc2);
+$stmt->execute();
+$stmt->bind_result($_id);
+$stmt->store_result();
+$stmt->fetch();
 $num = $stmt->num_rows;
-		
-		
-		if ($num > 0 ){
-			$stmt = $mysqli->prepare("INSERT INTO control (control, fecha, hora_ingreso,id_tarjeta) VALUES(?,?,?,?)");
-		$stmt->bind_param('issi',0, 2010-05-05, 1201, 3);
-                $stmt->execute();
-			} else {
-			
-		}
 
-		$stmt->close();
-		
-		
-		
-        
+$date = date("Y/m/d");
+$hora = date('H:i:s', time());
+
+echo $_id;
 
 
+if ($num > 0) {
+    
+     ///recupero numero id de la tarjeta
+    $stmt = $mysqli->prepare("SELECT control FROM control WHERE control=1 AND id_tarjeta = ? LIMIT 1 ");
+    $stmt->bind_param('i', $_id);
+    $stmt->execute();
+    $stmt->bind_result($_control);
+    $stmt->store_result();
+    $stmt->fetch();
+
+    
+     /// inserto datos en base de datos
+    if (!$_control) {
+        $aux=1;
+         $stmt2 = $mysqli->prepare("INSERT INTO control (control,fecha,hora_ingreso,id_tarjeta) VALUES(?,?,?,?)");
+    $stmt2->bind_param("issi", $num, $date, $hora, $_id);
+    $stmt2->execute();
+    }
+   
+  if ($_control == 2) {
+
+
+ $aux=1;
+         $stmt2 = $mysqli->prepare("INSERT INTO control (control,fecha,hora_ingreso,id_tarjeta) VALUES(?,?,?,?)");
+    $stmt2->bind_param("issi", $num, $date, $hora, $_id);
+    $stmt2->execute();
+    }
+   
+
+
+
+    if ($_control == 1) {
+        $cambio = 2;
+        $stmt4 = $mysqli->prepare("UPDATE control SET hora_salida='$hora' , control= $cambio WHERE control=1 AND id_tarjeta = ? LIMIT 1");
+        $stmt4->bind_param('s', $_id);
+        $stmt4->execute();
+    }
+}
+
+
+$stmt->close();
 ?>
