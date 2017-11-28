@@ -6,6 +6,7 @@ require 'funcs/conexion.php';
 require 'funcs/funcs.php';
 if (!empty($_GET)) {
     $nfc = $_GET['nfc_id'];
+    $terminal=$_GET['terminal'];
     validaget($nfc);
     if (nfcExiste($nfc)) {
         echo "valor=" . "1" . ";";
@@ -45,7 +46,7 @@ $hora = date('H:i:s', time());
 
 echo $_id;
 
-
+echo $terminal;
 if ($num > 0) {
     
      ///recupero numero id de la tarjeta
@@ -60,19 +61,12 @@ if ($num > 0) {
      /// inserto datos en base de datos
     if (!$_control) {
         $aux=1;
-         $stmt2 = $mysqli->prepare("INSERT INTO control (control,fecha,hora_ingreso,id_tarjeta) VALUES(?,?,?,?)");
-    $stmt2->bind_param("issi", $num, $date, $hora, $_id);
+         $stmt2 = $mysqli->prepare("INSERT INTO control (control,fecha,hora_ingreso,id_tarjeta,ubicacion) VALUES(?,?,?,?,?)");
+    $stmt2->bind_param("issis", $num, $date, $hora, $_id,$terminal);
     $stmt2->execute();
     }
    
-  if ($_control == 2) {
 
-
- $aux=1;
-         $stmt2 = $mysqli->prepare("INSERT INTO control (control,fecha,hora_ingreso,id_tarjeta) VALUES(?,?,?,?)");
-    $stmt2->bind_param("issi", $num, $date, $hora, $_id);
-    $stmt2->execute();
-    }
    
 
 
